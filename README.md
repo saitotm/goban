@@ -1,2 +1,12 @@
 # goban
-A CLI tool for grid search.
+
+**goban** is a CLI tool for grid search.
+
+## Getting started
+```
+
+```
+
+## Instalation
+
+## Configuration
