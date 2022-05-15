@@ -1,3 +1,9 @@
+mod goban;
+
+use goban::Goban;
+
 fn main() {
-    println!("Hello, world!");
+    let goban = Goban::new();
+    goban.run();
 }
+
