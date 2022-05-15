@@ -1,4 +1,5 @@
 mod goban;
+mod translator;
 
 use goban::Goban;
 
