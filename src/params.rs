@@ -6,16 +6,26 @@ pub struct Params {
 }
 
 impl Params {
-    pub fn new(keys: Vec<String>, values: Vec<Vec<String>>) -> Self {
+    pub fn new<K, V>(keys: K, values: V) -> Self
+    where
+        K: IntoIterator,
+        V: IntoIterator,
+        K::Item: ToString,
+        V::Item: IntoIterator,
+        <V::Item as IntoIterator>::Item: ToString,
+    {
+        let keys: Vec<String> = keys.into_iter().map(|k| k.to_string()).collect();
+        let values: Vec<Vec<String>> = values
+            .into_iter()
+            .map(|list| list.into_iter().map(|v| v.to_string()).collect::<Vec<_>>())
+            .collect();
+
         if keys.len() != values.len() {
             //FIXME: fix to return an error instead of occuring a panic.
             panic!("The length of keys must be equal to that of values.");
         }
 
-        Self {
-            keys,
-            values,
-        }
+        Self { keys, values }
     }
 
     pub fn iter(&self) -> ParamsIter {
@@ -49,7 +59,10 @@ impl<'a> Iterator for ParamsIter<'a> {
         let mut map = HashMap::new();
 
         for (i, idx) in idx_list.iter().enumerate() {
-            map.insert(self.params.keys[i].to_string(), self.params.values[i][*idx].to_string());
+            map.insert(
+                self.params.keys[i].to_string(),
+                self.params.values[i][*idx].to_string(),
+            );
         }
 
         Some(map)
@@ -104,7 +117,7 @@ impl<'a> Iterator for IndexCombIter {
                 }
 
                 if cur_idx.is_empty() {
-                    return None
+                    return None;
                 }
 
                 while cur_idx.len() < self.idx_len.len() {
@@ -113,10 +126,14 @@ impl<'a> Iterator for IndexCombIter {
 
                 self.cur_idx = Some(cur_idx);
             }
-
         }
 
-        Some(self.cur_idx.as_ref().expect("cur_idx must have some value").clone())
+        Some(
+            self.cur_idx
+                .as_ref()
+                .expect("cur_idx must have some value")
+                .clone(),
+        )
     }
 }
 
@@ -127,37 +144,78 @@ mod tests {
 
     #[test]
     fn params_iter_with_one_key() {
-        let keys = vec!["N".to_string()];
-        let values = vec![ vec!["1".to_string(), "10".to_string(), "100".to_string()] ];
-
+        let keys = vec!["N"];
+        let values = vec![vec!["1", "10", "100"]];
         let params = Params::new(keys, values);
         let mut iter = params.iter();
 
-        assert_eq!(Some(HashMap::from([("N".to_string(), "1".to_string())])), iter.next());
-        assert_eq!(Some(HashMap::from([("N".to_string(), "10".to_string())])), iter.next());
-        assert_eq!(Some(HashMap::from([("N".to_string(), "100".to_string())])), iter.next());
+        assert_eq!(
+            Some(HashMap::from([("N".to_string(), "1".to_string())])),
+            iter.next()
+        );
+        assert_eq!(
+            Some(HashMap::from([("N".to_string(), "10".to_string())])),
+            iter.next()
+        );
+        assert_eq!(
+            Some(HashMap::from([("N".to_string(), "100".to_string())])),
+            iter.next()
+        );
         assert_eq!(None, iter.next());
     }
 
     #[test]
     fn params_iter_with_two_keys() {
-        let keys = vec!["N".to_string(), "MAX_NODE".to_string()];
-        let values = vec![ 
-            vec!["1".to_string(), "10".to_string(), "100".to_string()],
-            vec!["1".to_string(), "2".to_string()],
-        ];
+        let keys = vec!["N", "MAX_NODE"];
+        let values = vec![vec![1, 10, 100], vec![1, 2]];
 
         let params = Params::new(keys, values);
         let mut iter = params.iter();
 
-        assert_eq!(Some(HashMap::from([("N".to_string(), "1".to_string()), ("MAX_NODE".to_string(), "1".to_string())])), iter.next());
-        assert_eq!(Some(HashMap::from([("N".to_string(), "1".to_string()), ("MAX_NODE".to_string(), "2".to_string())])), iter.next());
+        assert_eq!(
+            Some(HashMap::from([
+                ("N".to_string(), "1".to_string()),
+                ("MAX_NODE".to_string(), "1".to_string())
+            ])),
+            iter.next()
+        );
+        assert_eq!(
+            Some(HashMap::from([
+                ("N".to_string(), "1".to_string()),
+                ("MAX_NODE".to_string(), "2".to_string())
+            ])),
+            iter.next()
+        );
 
-        assert_eq!(Some(HashMap::from([("N".to_string(), "10".to_string()), ("MAX_NODE".to_string(), "1".to_string())])), iter.next());
-        assert_eq!(Some(HashMap::from([("N".to_string(), "10".to_string()), ("MAX_NODE".to_string(), "2".to_string())])), iter.next());
+        assert_eq!(
+            Some(HashMap::from([
+                ("N".to_string(), "10".to_string()),
+                ("MAX_NODE".to_string(), "1".to_string())
+            ])),
+            iter.next()
+        );
+        assert_eq!(
+            Some(HashMap::from([
+                ("N".to_string(), "10".to_string()),
+                ("MAX_NODE".to_string(), "2".to_string())
+            ])),
+            iter.next()
+        );
 
-        assert_eq!(Some(HashMap::from([("N".to_string(), "100".to_string()), ("MAX_NODE".to_string(), "1".to_string())])), iter.next());
-        assert_eq!(Some(HashMap::from([("N".to_string(), "100".to_string()), ("MAX_NODE".to_string(), "2".to_string())])), iter.next());
+        assert_eq!(
+            Some(HashMap::from([
+                ("N".to_string(), "100".to_string()),
+                ("MAX_NODE".to_string(), "1".to_string())
+            ])),
+            iter.next()
+        );
+        assert_eq!(
+            Some(HashMap::from([
+                ("N".to_string(), "100".to_string()),
+                ("MAX_NODE".to_string(), "2".to_string())
+            ])),
+            iter.next()
+        );
 
         assert_eq!(None, iter.next());
     }
@@ -185,7 +243,7 @@ mod tests {
         assert_eq!(Some(vec![1, 1]), iter.next());
         assert_eq!(Some(vec![2, 0]), iter.next());
         assert_eq!(Some(vec![2, 1]), iter.next());
-        
+
         assert_eq!(None, iter.next());
     }
 
@@ -202,7 +260,7 @@ mod tests {
         assert_eq!(Some(vec![1, 0, 1]), iter.next());
         assert_eq!(Some(vec![1, 0, 2]), iter.next());
         assert_eq!(Some(vec![1, 0, 3]), iter.next());
-        
+
         assert_eq!(None, iter.next());
     }
 }
