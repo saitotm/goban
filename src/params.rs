@@ -101,11 +101,11 @@ impl<'a> Iterator for IndexCombIter {
     type Item = Vec<usize>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.cur_idx.take() {
+        match self.cur_idx {
             None => {
                 self.init();
             }
-            Some(mut cur_idx) => {
+            Some(ref mut cur_idx) => {
                 while !cur_idx.is_empty() {
                     let i = cur_idx.len() - 1;
                     let next = cur_idx.pop()? + 1;
@@ -123,8 +123,6 @@ impl<'a> Iterator for IndexCombIter {
                 while cur_idx.len() < self.idx_len.len() {
                     cur_idx.push(0);
                 }
-
-                self.cur_idx = Some(cur_idx);
             }
         }
 
