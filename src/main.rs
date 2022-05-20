@@ -4,7 +4,6 @@ mod params;
 mod cui;
 
 fn main() {
-
-    cui::cui();
+    cui::launch();
 }
 

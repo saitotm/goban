@@ -5,24 +5,18 @@ use crate::{translator::HandlebarsTrans, goban::Goban};
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-    /// Name of the person to greet
-    #[clap(short, long)]
-    name: String,
+    /// Command to execution
+    command: String,
 
-    /// Number of times to greet
-    #[clap(short, long, default_value_t = 1)]
-    count: u8,
+    /// Path to a parameter file
+    #[clap(short, long, default_value = "parameters.json")]
+    filepath: String,
 }
 
-pub fn cui() {
+pub fn launch() {
     let args = Args::parse();
-    
-    for _ in 0..args.count {
-        println!("Hello {}!", args.name)
-    }
 
     let translator = HandlebarsTrans::new();
-
-    let goban = Goban::new("echo {{N}} {{M}}".to_string(), "parameters.json".to_string(), translator);
+    let goban = Goban::new(args.command, args.filepath, translator);
     goban.run();
 }
