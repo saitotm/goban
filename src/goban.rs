@@ -41,6 +41,9 @@ impl<T: Translator> Goban<T> {
     fn run_command(&self, param: HashMap<String, String>) {
         let cmd = self.translator.render(&param, &self.command);
 
+        println!("\nParameters: {:?}", &param);
+        println!("{}", &cmd);
+
         let output = match cmd.split_once(' ') {
             Some((program, arg)) => Command::new(program)
                 .arg(arg)
@@ -51,7 +54,6 @@ impl<T: Translator> Goban<T> {
                 .expect("failed to execute process"),
         };
 
-        println!();
         io::stdout().write_all(&output.stdout).unwrap();
         io::stderr().write_all(&output.stderr).unwrap();
         println!("{}", output.status);
