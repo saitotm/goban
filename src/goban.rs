@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     io::{self, Write},
-    process::Command,
+    process::{Command, Output},
 };
 
 use std::hash::Hash;
@@ -31,20 +31,26 @@ impl<T: Translator> Goban<T> {
 
         let kvm: HashMap<String, Vec<Value>> = serde_json::from_str(&data).unwrap();
         let (keys, values) = Self::split_keys_values(kvm);
-
         let params = Params::new(keys, values);
-        for param in params.iter() {
-            self.run_command(param);
+
+        for (i, param) in params.iter().enumerate() {
+            let cmd = self.translator.render(&param, &self.command);
+
+            println!("\n[{} / {}]", i + 1, params.get_combination());
+            println!("Parameters: {:?}", &param); // FIXME: show keys in the same order everytime.
+            println!("{}", &cmd);
+
+            let output = self.run_command(cmd);
+
+            // FIXME: remove unwrap
+            io::stdout().write_all(&output.stdout).unwrap(); 
+            io::stderr().write_all(&output.stderr).unwrap();
+            println!("[{}]", output.status);
         }
     }
 
-    fn run_command(&self, param: HashMap<String, String>) {
-        let cmd = self.translator.render(&param, &self.command);
-
-        println!("\nParameters: {:?}", &param);
-        println!("{}", &cmd);
-
-        let output = match cmd.split_once(' ') {
+    fn run_command(&self, cmd: String) -> Output {
+        match cmd.split_once(' ') {
             Some((program, arg)) => Command::new(program)
                 .arg(arg)
                 .output()
@@ -52,11 +58,7 @@ impl<T: Translator> Goban<T> {
             None => Command::new(cmd)
                 .output()
                 .expect("failed to execute process"),
-        };
-
-        io::stdout().write_all(&output.stdout).unwrap();
-        io::stderr().write_all(&output.stderr).unwrap();
-        println!("{}", output.status);
+        }
     }
 
     fn read_file(&self) -> String {
