@@ -28,6 +28,10 @@ impl Params {
         Self { keys, values }
     }
 
+    pub fn get_combination(&self) -> usize {
+        self.values.iter().map(|v| v.len()).product::<_>()
+    }
+
     pub fn iter(&self) -> ParamsIter {
         ParamsIter::new(self)
     }
@@ -139,6 +143,25 @@ impl<'a> Iterator for IndexCombIter {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn get_combination_with_one_key() {
+        let keys = vec!["N"];
+        let values = vec![vec!["1", "10", "100"]];
+        let params = Params::new(keys, values);
+
+        assert_eq!(3, params.get_combination());
+    }
+
+    #[test]
+    fn get_combination_with_two_keys() {
+        let keys = vec!["N", "MAX_NODE"];
+        let values = vec![vec![1, 10, 100], vec![1, 2]];
+
+        let params = Params::new(keys, values);
+
+        assert_eq!(6, params.get_combination());
+    }
 
     #[test]
     fn params_iter_with_one_key() {
