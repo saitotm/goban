@@ -50,15 +50,12 @@ impl<T: Translator> Goban<T> {
     }
 
     fn run_command(&self, cmd: String) -> Output {
-        match cmd.split_once(' ') {
-            Some((program, arg)) => Command::new(program)
-                .arg(arg)
+        // FIXME: execute command on the current shell.
+        Command::new("sh")
+                .arg("-c")
+                .arg(cmd)
                 .output()
-                .expect("failed to execute process"),
-            None => Command::new(cmd)
-                .output()
-                .expect("failed to execute process"),
-        }
+                .expect("failed to execute process")
     }
 
     fn read_file(&self) -> String {
