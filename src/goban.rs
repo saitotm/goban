@@ -32,6 +32,7 @@ impl<T: Translator> Goban<T> {
 
         let kvm: HashMap<String, Vec<Value>> = serde_json::from_str(&data).unwrap();
         let (keys, values) = Self::split_keys_values(kvm);
+        let values = Self::values_to_string(values);
         let params = Params::new(keys, values);
 
         for (i, param) in params.iter().enumerate() {
@@ -40,7 +41,7 @@ impl<T: Translator> Goban<T> {
 
             println!("\n[{} / {}]", i + 1, params.get_combination());
             println!("Parameters: {:?}", &param); // FIXME: show keys in the same order everytime.
-            println!("{}", &cmd);
+            println!("$ {}", &cmd);
 
             let output = self.run_command(shell, cmd);
 
@@ -67,6 +68,18 @@ impl<T: Translator> Goban<T> {
     fn read_file(&self) -> String {
         // FIXME: remove unwrap()
         fs::read_to_string(&self.file_name).unwrap()
+    }
+
+    fn values_to_string(values: Vec<Vec<Value>>) -> Vec<Vec<String>> {
+        values
+            .iter()
+            .map(|list| {
+                list.iter().map(|v| match v {
+                    Value::String(s) => s.clone(),
+                    _ => v.to_string(),
+                }).collect()
+            })
+            .collect()
     }
 
     fn split_keys_values<K: Hash + Eq + Clone, V: Clone>(kvm: HashMap<K, V>) -> (Vec<K>, Vec<V>) {
