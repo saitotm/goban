@@ -3,7 +3,11 @@ mod translator;
 mod params;
 mod cui;
 
-fn main() {
-    cui::launch();
+use anyhow::Result;
+
+fn main() -> Result<()> {
+    cui::launch()?;
+
+    Ok(())
 }
 

@@ -1,4 +1,5 @@
 use clap::Parser;
+use anyhow::Result;
 
 use crate::{translator::HandlebarsTrans, goban::Goban};
 
@@ -13,10 +14,10 @@ struct Args {
     filepath: String,
 }
 
-pub fn launch() {
+pub fn launch() -> Result<()> {
     let args = Args::parse();
 
     let translator = HandlebarsTrans::new();
     let goban = Goban::new(args.command, args.filepath, translator);
-    goban.run();
+    goban.run()
 }

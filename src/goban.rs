@@ -8,6 +8,7 @@ use std::{
 use std::fs;
 use std::hash::Hash;
 
+use anyhow::{Context, Result};
 use serde_json::Value;
 
 use crate::{params::Params, translator::Translator};
@@ -27,16 +28,20 @@ impl<T: Translator> Goban<T> {
         }
     }
 
-    pub fn run(&self) {
-        let data = self.read_file();
+    pub fn run(&self) -> Result<()> {
+        let data = self.read_file()?;
 
-        let kvm: HashMap<String, Vec<Value>> = serde_json::from_str(&data).unwrap();
+        let kvm: HashMap<String, Vec<Value>> =
+            serde_json::from_str(&data).context("The format of the input data is invalid.")?;
         let (keys, values) = Self::split_keys_values(kvm);
         let values = Self::values_to_string(values);
         let params = Params::new(keys, values);
 
         for (i, param) in params.iter().enumerate() {
-            let cmd = self.translator.render(&param, &self.command);
+            let cmd = self
+                .translator
+                .render(&param, &self.command)
+                .context("Failed to replace keys in the command with values in the input data.")?;
             let shell = self.get_current_shell().unwrap_or_else(|| "sh".to_string());
 
             println!("\n[{} / {}]", i + 1, params.get_combination());
@@ -45,11 +50,12 @@ impl<T: Translator> Goban<T> {
 
             let output = self.run_command(shell, cmd);
 
-            // FIXME: remove unwrap
-            io::stdout().write_all(&output.stdout).unwrap();
-            io::stderr().write_all(&output.stderr).unwrap();
+            io::stdout().write_all(&output.stdout).context("Failed to write the result to stdout.")?;
+            io::stderr().write_all(&output.stderr).context("Failed to write the result to stderr.")?;
             println!("[{}]", output.status);
         }
+
+        Ok(())
     }
 
     fn run_command(&self, shell: String, cmd: String) -> Output {
@@ -65,19 +71,21 @@ impl<T: Translator> Goban<T> {
         env::var("SHELL").ok()
     }
 
-    fn read_file(&self) -> String {
-        // FIXME: remove unwrap()
-        fs::read_to_string(&self.file_name).unwrap()
+    fn read_file(&self) -> Result<String> {
+        let data = fs::read_to_string(&self.file_name).context(format!("Failed to read {}", &self.file_name))?;
+        Ok(data)
     }
 
     fn values_to_string(values: Vec<Vec<Value>>) -> Vec<Vec<String>> {
         values
             .iter()
             .map(|list| {
-                list.iter().map(|v| match v {
-                    Value::String(s) => s.clone(),
-                    _ => v.to_string(),
-                }).collect()
+                list.iter()
+                    .map(|v| match v {
+                        Value::String(s) => s.clone(),
+                        _ => v.to_string(),
+                    })
+                    .collect()
             })
             .collect()
     }
