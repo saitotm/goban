@@ -1,12 +1,14 @@
 use std::collections::HashMap;
 
+use anyhow::{Result, bail};
+
 pub struct Params {
     keys: Vec<String>,
     values: Vec<Vec<String>>,
 }
 
 impl Params {
-    pub fn new<K, V>(keys: K, values: V) -> Self
+    pub fn new<K, V>(keys: K, values: V) -> Result<Self>
     where
         K: IntoIterator,
         V: IntoIterator,
@@ -21,11 +23,10 @@ impl Params {
             .collect();
 
         if keys.len() != values.len() {
-            //FIXME: fix to return an error instead of occuring a panic.
-            panic!("The length of keys must be equal to that of values.");
+            bail!("The length of keys must be equal to that of values.")
         }
-
-        Self { keys, values }
+        
+        Ok(Self { keys, values })
     }
 
     pub fn get_combination(&self) -> usize {
@@ -148,7 +149,7 @@ mod tests {
     fn get_combination_with_one_key() {
         let keys = vec!["N"];
         let values = vec![vec!["1", "10", "100"]];
-        let params = Params::new(keys, values);
+        let params = Params::new(keys, values).expect("must be ok");
 
         assert_eq!(3, params.get_combination());
     }
@@ -158,7 +159,7 @@ mod tests {
         let keys = vec!["N", "MAX_NODE"];
         let values = vec![vec![1, 10, 100], vec![1, 2]];
 
-        let params = Params::new(keys, values);
+        let params = Params::new(keys, values).expect("must be ok");
 
         assert_eq!(6, params.get_combination());
     }
@@ -167,7 +168,7 @@ mod tests {
     fn params_iter_with_one_key() {
         let keys = vec!["N"];
         let values = vec![vec!["1", "10", "100"]];
-        let params = Params::new(keys, values);
+        let params = Params::new(keys, values).expect("must be ok");
         let mut iter = params.iter();
 
         assert_eq!(
@@ -190,7 +191,7 @@ mod tests {
         let keys = vec!["N", "MAX_NODE"];
         let values = vec![vec![1, 10, 100], vec![1, 2]];
 
-        let params = Params::new(keys, values);
+        let params = Params::new(keys, values).expect("must be ok");
         let mut iter = params.iter();
 
         assert_eq!(

@@ -35,7 +35,7 @@ impl<T: Translator> Goban<T> {
             serde_json::from_str(&data).context("The format of the input data is invalid.")?;
         let (keys, values) = Self::split_keys_values(kvm);
         let values = Self::values_to_string(values);
-        let params = Params::new(keys, values);
+        let params = Params::new(keys, values)?;
 
         for (i, param) in params.iter().enumerate() {
             let cmd = self
