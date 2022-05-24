@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use anyhow::{Result, bail};
+use anyhow::{bail, Result};
 
 pub struct Params {
     keys: Vec<String>,
@@ -25,7 +25,7 @@ impl Params {
         if keys.len() != values.len() {
             bail!("The length of keys must be equal to that of values.")
         }
-        
+
         Ok(Self { keys, values })
     }
 
@@ -33,7 +33,7 @@ impl Params {
         self.values.iter().map(|v| v.len()).product::<_>()
     }
 
-    pub fn iter(&self) -> ParamsIter {
+    pub fn iter(&self) -> Result<ParamsIter> {
         ParamsIter::new(self)
     }
 }
@@ -44,13 +44,13 @@ pub struct ParamsIter<'a> {
 }
 
 impl<'a> ParamsIter<'a> {
-    fn new(params: &'a Params) -> Self {
+    fn new(params: &'a Params) -> Result<Self> {
         let idx_len = params.values.iter().map(|v| v.len()).collect();
 
-        Self {
+        Ok(Self {
             params,
-            idx_comb_iter: IndexCombIter::new(idx_len),
-        }
+            idx_comb_iter: IndexCombIter::new(idx_len)?,
+        })
     }
 }
 
@@ -80,18 +80,17 @@ struct IndexCombIter {
 }
 
 impl IndexCombIter {
-    fn new(idx_len: Vec<usize>) -> Self {
+    fn new(idx_len: Vec<usize>) -> Result<Self> {
         for len in &idx_len {
             if len <= &0 {
-                //FIXME: fix to return an error not to panic here.
-                panic!("Each element in idx_len must be greater than 0.");
+                bail!("Each element in idx_len must be greater than 0.");
             }
         }
 
-        Self {
+        Ok(Self {
             idx_len,
             cur_idx: None,
-        }
+        })
     }
 
     fn init(&mut self) {
@@ -168,8 +167,8 @@ mod tests {
     fn params_iter_with_one_key() {
         let keys = vec!["N"];
         let values = vec![vec!["1", "10", "100"]];
-        let params = Params::new(keys, values).expect("must be ok");
-        let mut iter = params.iter();
+        let params = Params::new(keys, values).expect("must be Ok");
+        let mut iter = params.iter().expect("iter must be Ok");
 
         assert_eq!(
             Some(HashMap::from([("N".to_string(), "1".to_string())])),
@@ -192,7 +191,7 @@ mod tests {
         let values = vec![vec![1, 10, 100], vec![1, 2]];
 
         let params = Params::new(keys, values).expect("must be ok");
-        let mut iter = params.iter();
+        let mut iter = params.iter().expect("iter must be Ok");
 
         assert_eq!(
             Some(HashMap::from([
@@ -245,7 +244,7 @@ mod tests {
     #[test]
     fn index_comb_iter_with_one_vec() {
         let idx_len = vec![4];
-        let mut iter = IndexCombIter::new(idx_len);
+        let mut iter = IndexCombIter::new(idx_len).expect("iter must be Ok");
 
         assert_eq!(Some(vec![0]), iter.next());
         assert_eq!(Some(vec![1]), iter.next());
@@ -257,7 +256,7 @@ mod tests {
     #[test]
     fn index_comb_iter_with_two_vecs() {
         let idx_len = vec![3, 2];
-        let mut iter = IndexCombIter::new(idx_len);
+        let mut iter = IndexCombIter::new(idx_len).expect("iter must be Ok");
 
         assert_eq!(Some(vec![0, 0]), iter.next());
         assert_eq!(Some(vec![0, 1]), iter.next());
@@ -272,7 +271,7 @@ mod tests {
     #[test]
     fn index_comb_iter_with_three_vecs() {
         let idx_len = vec![2, 1, 4];
-        let mut iter = IndexCombIter::new(idx_len);
+        let mut iter = IndexCombIter::new(idx_len).expect("iter must be Ok");
 
         assert_eq!(Some(vec![0, 0, 0]), iter.next());
         assert_eq!(Some(vec![0, 0, 1]), iter.next());

@@ -37,7 +37,7 @@ impl<T: Translator> Goban<T> {
         let values = Self::values_to_string(values);
         let params = Params::new(keys, values)?;
 
-        for (i, param) in params.iter().enumerate() {
+        for (i, param) in params.iter()?.enumerate() {
             let cmd = self
                 .translator
                 .render(&param, &self.command)
