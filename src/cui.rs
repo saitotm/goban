@@ -18,6 +18,6 @@ pub fn launch() -> Result<()> {
     let args = Args::parse();
 
     let translator = HandlebarsTrans::new();
-    let goban = Goban::new(args.command, args.filepath, translator);
+    let goban = Goban::new(args.command, args.filepath, translator)?;
     goban.run()
 }
