@@ -42,7 +42,7 @@ impl<T: Translator> Goban<T> {
                 .translator
                 .render(&param, &self.command)
                 .context("Failed to replace keys in the command with values in the input data.")?;
-            let shell = self.get_current_shell().unwrap_or_else(|| "sh".to_string());
+            let shell = self.get_current_shell().unwrap_or_else(|_| "sh".to_string());
 
             println!("\n[{} / {}]", i + 1, params.get_combination());
             println!("Parameters: {:?}", &param); // FIXME: show keys in the same order everytime.
@@ -66,9 +66,8 @@ impl<T: Translator> Goban<T> {
             .expect("failed to execute process")
     }
 
-    // FIXME: Return Result instead of Option
-    fn get_current_shell(&self) -> Option<String> {
-        env::var("SHELL").ok()
+    fn get_current_shell(&self) -> Result<String> {
+        env::var("SHELL").context("Failed to get the current shell.")
     }
 
     fn read_file(&self) -> Result<String> {
