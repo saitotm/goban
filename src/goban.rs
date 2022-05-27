@@ -74,7 +74,7 @@ impl<T: Translator> Goban<T> {
 }
 
 fn read_file(filename: String) -> Result<String> {
-    let data = fs::read_to_string(filename)
+    let data = fs::read_to_string(&filename)
         .context(format!("Failed to read {}", filename))?;
     Ok(data)
 }
