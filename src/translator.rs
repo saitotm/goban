@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use handlebars::Handlebars;
-use anyhow::Result;
+use anyhow::{Result, Context};
 
 pub trait Translator {
     fn render(&self, kvm: &HashMap<String, String>, template: &str) -> Result<String>;
@@ -19,7 +19,7 @@ impl Translator for HandlebarsTrans {
     fn render(&self, kvm: &HashMap<String, String>, template: &str) -> Result<String> {
         let reg = Handlebars::new();
 
-        Ok( reg.render_template(template, kvm)? )
+        reg.render_template(template, kvm).context("Failed to replace keys with values.")
     }
 }
 
