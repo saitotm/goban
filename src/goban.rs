@@ -1,7 +1,9 @@
 use std::{
     collections::HashMap,
     env,
+    fmt::Display,
     io::{self, Write},
+    path::Path,
     process::{Command, Output},
 };
 
@@ -21,13 +23,17 @@ pub struct Goban<T: Translator> {
 }
 
 impl<T: Translator> Goban<T> {
-    pub fn new(command: String, filename: String, translator: T) -> Result<Self> {
+    pub fn new<S: Into<String>, P: AsRef<Path> + Display>(
+        command: S,
+        path: P,
+        translator: T,
+    ) -> Result<Self> {
         let shell = get_current_shell().unwrap_or_else(|_| "sh".to_string());
-        let data = read_file(filename)?;
+        let data = read_file(path)?;
 
         Ok(Self {
             shell,
-            command,
+            command: command.into(),
             data,
             translator,
         })
@@ -73,9 +79,8 @@ impl<T: Translator> Goban<T> {
     }
 }
 
-fn read_file(filename: String) -> Result<String> {
-    let data = fs::read_to_string(&filename)
-        .context(format!("Failed to read {}", filename))?;
+fn read_file<P: AsRef<Path> + Display>(path: P) -> Result<String> {
+    let data = fs::read_to_string(&path).context(format!("Failed to read {}", path))?;
     Ok(data)
 }
 
