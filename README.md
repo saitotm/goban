@@ -44,16 +44,28 @@ Please give me 100 apple
 [exit status: 0]
 ```
 
-## Usage
+## Discription
 goban 0.1.0
 
-USAGE:
+Usage:
     goban [OPTIONS] <COMMAND>
 
-ARGS:
+Args:
     <COMMAND>    Command to execution
 
-OPTIONS:
+Options:
     -f, --filepath <FILEPATH>    Path to a parameter file [default: parameters.json]
     -h, --help                   Print help information
     -V, --version                Print version information
+
+### File format
+- The format of the parameter file must be JSON.
+- The parameter file must be JSON Object.
+- The values in the JSON Object must be JSON arrays.
+- The JSON arrays can have any valid JSON values.
+
+### Command template format
+goban use **Handlebars**, which is a simple template engine.
+The goban's template format is following to Handlebars's one.
+See https://handlebarsjs.com/guide/expressions.html.
+
