@@ -45,8 +45,6 @@ Please give me 100 apple
 ```
 
 ## Discription
-goban 0.1.0
-
 Usage:
     goban [OPTIONS] <COMMAND>
 
@@ -55,7 +53,9 @@ Args:
 
 Options:
     -f, --filepath <FILEPATH>    Path to a parameter file [default: parameters.json]
+	    
     -h, --help                   Print help information
+	    
     -V, --version                Print version information
 
 ### File format
