@@ -1,7 +1,7 @@
-mod goban;
-mod translator;
-mod params;
 mod cui;
+mod goban;
+mod params;
+mod translator;
 
 use anyhow::Result;
 
@@ -10,4 +10,3 @@ fn main() -> Result<()> {
 
     Ok(())
 }
-

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
+use anyhow::{Context, Result};
 use handlebars::Handlebars;
-use anyhow::{Result, Context};
 
 pub trait Translator {
     fn render(&self, kvm: &HashMap<String, String>, template: &str) -> Result<String>;
@@ -19,7 +19,8 @@ impl Translator for HandlebarsTrans {
     fn render(&self, kvm: &HashMap<String, String>, template: &str) -> Result<String> {
         let reg = Handlebars::new();
 
-        reg.render_template(template, kvm).context("Failed to replace keys with values.")
+        reg.render_template(template, kvm)
+            .context("Failed to replace keys with values.")
     }
 }
 
@@ -33,7 +34,9 @@ mod tests {
         kvm.insert("name".to_string(), "Taro".to_string());
 
         let translator = HandlebarsTrans::new();
-        let result = translator.render(&kvm, "hello {{name}}").expect("must be ok");
+        let result = translator
+            .render(&kvm, "hello {{name}}")
+            .expect("must be ok");
 
         assert_eq!(result, "hello Taro");
     }
@@ -45,7 +48,9 @@ mod tests {
         kvm.insert("name2".to_string(), "Yamada".to_string());
 
         let translator = HandlebarsTrans::new();
-        let result = translator.render(&kvm, "hello {{name1}}, My name is {{name2}}").expect("must be ok");
+        let result = translator
+            .render(&kvm, "hello {{name1}}, My name is {{name2}}")
+            .expect("must be ok");
 
         assert_eq!(result, "hello Taro, My name is Yamada");
     }
@@ -57,7 +62,9 @@ mod tests {
         kvm.insert("depth".to_string(), "5".to_string());
 
         let translator = HandlebarsTrans::new();
-        let result = translator.render(&kvm, "$NUM={{num}} $DEPTH={{depth}}").expect("must be ok");
+        let result = translator
+            .render(&kvm, "$NUM={{num}} $DEPTH={{depth}}")
+            .expect("must be ok");
 
         assert_eq!(result, "$NUM=1 $DEPTH=5");
     }

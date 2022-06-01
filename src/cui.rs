@@ -1,7 +1,7 @@
-use clap::Parser;
 use anyhow::Result;
+use clap::Parser;
 
-use crate::{translator::HandlebarsTrans, goban::Goban};
+use crate::{goban::Goban, translator::HandlebarsTrans};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
