@@ -44,7 +44,8 @@ Please give me 100 apple
 [exit status: 0]
 ```
 
-## Discription
+## Detail
+```
 Usage:
     goban [OPTIONS] <COMMAND>
 
@@ -57,6 +58,7 @@ Options:
     -h, --help                   Print help information
 	    
     -V, --version                Print version information
+```
 
 ### File format
 - The format of the parameter file must be JSON.
